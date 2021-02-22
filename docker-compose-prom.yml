@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+#    restart: always
+    privileged: true
+    user: root
+    ports:
+      - 9090:9090
+      - 9091:9091
+    volumes:
+      - ./data/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    hostname: grafana
+#    restart: always
+    ports:
+      - '3000:3000'
+#    networks:
+#      - monitor
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    hostname: node-exporter
+#    restart: always
+    ports:
+      - '9100:9100'

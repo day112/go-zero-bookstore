@@ -1,0 +1,16 @@
+Name: check.rpc
+ListenOn: 0.0.0.0:8081
+Etcd:
+  Hosts:
+    - etcd:2379
+  Key: check.rpc
+
+DataSource: root:123456@tcp(${LOCAL_HOST}:33306)/gozero
+Table: book
+Cache:
+  - Host: ${LOCAL_HOST}:7379
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 8091
+  Path: /metrics

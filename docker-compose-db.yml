@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  db:
+    container_name: db
+    image: mysql:8.0.22
+#    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "123456"
+    command:
+      --default-authentication-plugin=mysql_native_password
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_general_ci
+      --explicit_defaults_for_timestamp=true
+      --lower_case_table_names=1
+    ports:
+      - 33306:3306
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+
+  redis:
+    image: redis:6.0.9
+#    restart: always
+    container_name: redis
+    ports:
+      - "7379:6379"
+    volumes:
+      - ./data/redis:/data
+
+#  etcd:
+#    container_name: etcd
+#    image: bitnami/etcd:latest
+#    restart: always
+#    environment:
+#      - ALLOW_NONE_AUTHENTICATION=yes
+#    expose:
+#      - 2379
+#      - 2380
+#    ports:
+#      - "2379:2379"
+#    volumes:
+#      - etcd_data:/bitnami/etcd
+
+volumes:
+    etcd_data:
+      driver: local
+
+
+

@@ -1,0 +1,114 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkrpc
+  namespace: discov
+  labels:
+    app: checkrpc
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: checkrpc
+  template:
+    metadata:
+      labels:
+        app: checkrpc
+    spec:
+      containers:
+      - name: checkrpc
+        image: checkrpc:0.0.1
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh","-c","sleep 5"]
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 20m
+            memory: 128Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+      volumes:
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: checkrpc-svc
+  namespace: discov
+spec:
+  ports:
+#    - port: 8081
+    - nodePort:
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: checkrpc
+  sessionAffinity: None
+  type: NodePort
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: checkrpc-hpa-c
+  namespace: discov
+  labels:
+    app: checkrpc-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkrpc
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: checkrpc-hpa-m
+  namespace: discov
+  labels:
+    app: checkrpc-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: checkrpc
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 80

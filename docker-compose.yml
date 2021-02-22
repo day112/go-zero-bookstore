@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  api:
+    image: apirpc:0.0.1
+#    environment:
+#      LOCAL_HOST: 192.168.31.132
+    expose:
+      - 8888
+    ports:
+      - "8888:8888"
+      - "8898:8898"
+    depends_on:
+      - addRpc
+      - checkRpc
+
+  addRpc:
+    image: addrpc:0.0.1
+#    environment:
+#      LOCAL_HOST: 192.168.31.132
+    expose:
+      - 8080
+    ports:
+      - "8080:8080"
+      - "8090:8090"
+    depends_on:
+      - checkRpc
+
+
+  checkRpc:
+    image: checkrpc:0.0.1
+#    environment:
+#      LOCAL_HOST: 192.168.31.132
+    expose:
+      - 8081
+    ports:
+      - "8081:8081"
+      - "8091:8091"
+

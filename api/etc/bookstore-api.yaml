@@ -1,0 +1,20 @@
+Name: bookstore-api
+Host: 0.0.0.0
+Port: 8888
+
+Add:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: add.rpc
+
+Check:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: check.rpc
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 8898
+  Path: /metrics

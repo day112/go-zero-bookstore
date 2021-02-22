@@ -1,0 +1,113 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apirpc
+  namespace: discov
+  labels:
+    app: apirpc
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: apirpc
+  template:
+    metadata:
+      labels:
+        app: apirpc
+    spec:
+      containers:
+      - name: apirpc
+        image: apirpc:0.0.1
+        lifecycle:
+          preStop:
+            exec:
+              command: ["sh","-c","sleep 5"]
+        ports:
+        - containerPort: 8888
+        readinessProbe:
+          tcpSocket:
+            port: 8888
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          tcpSocket:
+            port: 8888
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 20m
+            memory: 128Mi
+          limits:
+            cpu: 1000m
+            memory: 1024Mi
+        volumeMounts:
+        - name: timezone
+          mountPath: /etc/localtime
+      volumes:
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Shanghai
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: apirpc-svc
+  namespace: discov
+spec:
+  ports:
+    - nodePort:
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+  selector:
+    app: apirpc
+  sessionAffinity: None
+  type: NodePort
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: apirpc-hpa-c
+  namespace: discov
+  labels:
+    app: apirpc-hpa-c
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: apirpc
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 80
+
+---
+
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: apirpc-hpa-m
+  namespace: discov
+  labels:
+    app: apirpc-hpa-m
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: apirpc
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 80

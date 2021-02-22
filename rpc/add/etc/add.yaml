@@ -1,0 +1,24 @@
+Name: add.rpc
+ListenOn: 0.0.0.0:8080
+
+# 首先添加 check 配置项
+Check:
+  Etcd:
+    Hosts:
+      - etcd:2379
+    Key: check.rpc
+
+Etcd:
+  Hosts:
+    - etcd:2379
+  Key: add.rpc
+
+DataSource: root:123456@tcp(${LOCAL_HOST}:33306)/gozero
+Table: book
+Cache:
+  - Host: ${LOCAL_HOST}:7379
+
+Prometheus:
+  Host: 0.0.0.0
+  Port: 8090
+  Path: /metrics
